@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:sgl_admin/backend/authServices.dart';
 import 'package:sgl_admin/backend/database.dart';
 import 'package:sgl_admin/screens/home/doubleDataScreen.dart';
 import 'package:sgl_admin/screens/home/singleDataScreen.dart';
@@ -32,10 +34,17 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.amber.shade700,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text('SGL-Admin'),
-      ),
+          backgroundColor: Colors.amber.shade700,
+          iconTheme: const IconThemeData(color: Colors.black),
+          title: const Text('SGL-Admin'),
+          actions: [
+            DropdownButton(
+                items: [DropdownMenuItem(child: Text('Logout'))],
+                onChanged: (value) {
+                  AuthServices().logout(context);
+                })
+          ]),
+
       body: PageView(
         controller: _pageController,
         physics: NeverScrollableScrollPhysics(),

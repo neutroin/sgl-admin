@@ -33,6 +33,7 @@ class DatabaseServices {
   }
 
   void updateLatestData(
+    String doc,
     String Time,
     String A,
     String B,
@@ -48,7 +49,7 @@ class DatabaseServices {
     };
     CollectionReference collectionRef =
         FirebaseFirestore.instance.collection('scores');
-    DocumentReference documentRef = collectionRef.doc('single');
+    DocumentReference documentRef = collectionRef.doc(doc);
 
     // Get the current 'latest' data
     DocumentSnapshot snapshot = await documentRef.get();

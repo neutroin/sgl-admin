@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../backend/database.dart';
+import '../../constants/constants.dart';
 
 class DoubleDataScreen extends StatefulWidget {
   const DoubleDataScreen({super.key});
@@ -21,19 +22,7 @@ class _DoubleDataScreenState extends State<DoubleDataScreen> {
   FocusNode textField2FocusNode = FocusNode();
   FocusNode textField3FocusNode = FocusNode();
   FocusNode textField4FocusNode = FocusNode();
-
-  @override
-  void dispose() {
-    _A.dispose();
-    _B.dispose();
-    _C.dispose();
-    _Time.dispose();
-    textField1FocusNode.dispose();
-    textField2FocusNode.dispose();
-    textField3FocusNode.dispose();
-    textField4FocusNode.dispose();
-    super.dispose();
-  }
+  String? selectedTime;
 
   @override
   Widget build(BuildContext context) {
@@ -156,26 +145,69 @@ class _DoubleDataScreenState extends State<DoubleDataScreen> {
           const SizedBox(
             height: 30,
           ),
-          Container(
-            height: 80,
-            width: 180,
-            decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.only(right: 10.0, left: 10),
-              child: Center(
-                child: TextField(
-                  focusNode: textField4FocusNode,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 26),
-                  controller: _Time,
-                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                  autofocus: true,
-                  keyboardType: TextInputType.text,
-                  decoration: const InputDecoration(
-                      hintText: 'eg: 12:15 PM', border: InputBorder.none),
-                ),
+          InkWell(
+            onTap: () {
+              showBottomSheet(
+                  enableDrag: true,
+                  context: context,
+                  builder: (context) {
+                    return Container(
+                      height: 300,
+                      color: Colors.grey.shade200,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('Close')),
+                            ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: timeList.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          selectedTime = timeList[index];
+                                          _Time.text = selectedTime!;
+                                        });
+                                        print("Selected Time : " + _Time.text);
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text(
+                                        timeList[index],
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                          ],
+                        ),
+                      ),
+                    );
+                  });
+            },
+            child: Container(
+              height: 80,
+              width: 180,
+              decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: EdgeInsets.only(right: 10.0, left: 10),
+                child: Center(
+                    child: Text(
+                  selectedTime ?? 'Tap to select',
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
+                )),
               ),
             ),
           ),
@@ -190,8 +222,8 @@ class _DoubleDataScreenState extends State<DoubleDataScreen> {
                     _Time.text.isEmpty) {
                   Fluttertoast.showToast(msg: 'Please Add All Data to Submit');
                 } else {
-                  DatabaseServices()
-                      .updateLatestData(_Time.text, _A.text, _B.text, _C.text);
+                  DatabaseServices().updateLatestData(
+                      'double', _Time.text, _A.text, _B.text, _C.text);
                   _A.clear();
                   _B.clear();
                   _C.clear();
@@ -199,18 +231,13 @@ class _DoubleDataScreenState extends State<DoubleDataScreen> {
                 }
               },
               child: AnimatedContainer(
-                duration: Duration(seconds: 1),
+                duration: const Duration(seconds: 1),
                 height: 50,
                 width: 250,
                 decoration: BoxDecoration(
-                    color: _A.text.isEmpty ||
-                            _B.text.isEmpty ||
-                            _C.text.isEmpty ||
-                            _Time.text.isEmpty
-                        ? Colors.grey.shade200
-                        : Colors.green,
+                    color: Colors.green,
                     borderRadius: BorderRadius.circular(8)),
-                child: Center(
+                child: const Center(
                   child: Text('Submit'),
                 ),
               )),
