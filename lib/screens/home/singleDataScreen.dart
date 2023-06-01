@@ -29,22 +29,29 @@ class _SingleDataScreenState extends State<SingleDataScreen> {
   @override
   void initState() {
     super.initState();
-    checkCurrentTime();
   }
 
-  void checkCurrentTime() {
-    DateTime now = DateTime.now();
-    String currentTime = DateFormat('h:mm a').format(now);
-    int currentIndex = timeList.indexWhere((time) => time == currentTime);
-    if (currentIndex != -1 && currentIndex < timeList.length - 2) {
-      setState(() {
-        enabledTimes = timeList.sublist(currentIndex, currentIndex + 3);
-      });
-    }
+  int selectedIndex = -1;
+
+  void updateTime(String newTime) {
+    setState(() {
+      selectedTime = newTime;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    void _showTimeSelectionBottomSheet(BuildContext context) {
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return TimeSelectionBar(
+            onTimeSelected: updateTime,
+          );
+        },
+      );
+    }
+
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -166,52 +173,62 @@ class _SingleDataScreenState extends State<SingleDataScreen> {
           ),
           InkWell(
             onTap: () {
-              showBottomSheet(
-                  enableDrag: true,
-                  context: context,
-                  builder: (context) {
-                    return Container(
-                      height: 300,
-                      color: Colors.grey.shade200,
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Close')),
-                            ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: timeList.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          selectedTime = timeList[index];
-                                          _Time.text = selectedTime!;
-                                        });
-                                        print("Selected Time : " + _Time.text);
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text(
-                                        timeList[index],
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  );
-                                }),
-                          ],
-                        ),
-                      ),
-                    );
-                  });
+              _showTimeSelectionBottomSheet(context);
+              // showBottomSheet(
+              //     enableDrag: true,
+              //     context: context,
+              //     builder: (context) {
+              //       return Container(
+              //         height: 300,
+              //         color: Colors.grey.shade200,
+              //         child: SingleChildScrollView(
+              //           child: Column(
+              //             children: [
+              //               TextButton(
+              //                   onPressed: () {
+              //                     Navigator.pop(context);
+              //                   },
+              //                   child: const Text('Close')),
+              //               ListView.builder(
+              //                   shrinkWrap: true,
+              //                   physics: const NeverScrollableScrollPhysics(),
+              //                   itemCount: timeList.length,
+              //                   itemBuilder: (context, index) {
+              //                     return Padding(
+              //                       padding: const EdgeInsets.all(8.0),
+              //                       child: InkWell(
+              //                         onTap: () {
+              //                           setState(() {
+              //                             selectedTime = timeList[index];
+              //                             _Time.text = selectedTime!;
+              //                             selectedIndex = index;
+              //                           });
+
+              //                           print("Selected Time : " + _Time.text);
+              //                           // Navigator.pop(context);
+              //                         },
+              //                         child: Container(
+              //                           color: selectedIndex == index
+              //                               ? Colors.blue
+              //                               : Colors.transparent,
+              //                           child: Center(
+              //                             child: Text(
+              //                               timeList[index],
+              //                               textAlign: TextAlign.center,
+              //                               style: const TextStyle(
+              //                                   fontSize: 24,
+              //                                   fontWeight: FontWeight.bold),
+              //                             ),
+              //                           ),
+              //                         ),
+              //                       ),
+              //                     );
+              //                   }),
+              //             ],
+              //           ),
+              //         ),
+              //       );
+              //     });
             },
             child: Container(
               height: 80,
@@ -351,6 +368,80 @@ class _SingleDataScreenState extends State<SingleDataScreen> {
                   return const SizedBox();
                 }
               }),
+        ],
+      ),
+    );
+  }
+}
+
+class TimeSelectionBar extends StatefulWidget {
+  String? selectedTime;
+  String? timeController;
+  final Function(String) onTimeSelected;
+  TimeSelectionBar({super.key, required this.onTimeSelected});
+  @override
+  _TimeSelectionBarState createState() => _TimeSelectionBarState();
+}
+
+class _TimeSelectionBarState extends State<TimeSelectionBar> {
+  int selectedIndex = -1;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 300,
+      color: Colors.grey[200],
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              scrollDirection: Axis.vertical,
+              itemCount: timeList.length,
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        selectedIndex = index;
+                      });
+                      if (widget.onTimeSelected != null) {
+                        widget.onTimeSelected(timeList[index]);
+                      }
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: selectedIndex == index
+                            ? Colors.amber
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        timeList[index],
+                        style: TextStyle(
+                            color: selectedIndex == index
+                                ? Colors.white
+                                : Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (selectedIndex != -1)
+            ElevatedButton(
+              child: Text('Continue'),
+              onPressed: () {
+                // Perform continue action here
+                Navigator.pop(context); // Close the bottom sheet
+              },
+            ),
         ],
       ),
     );

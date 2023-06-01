@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:sgl_admin/screens/home/singleDataScreen.dart';
 
 import '../../backend/database.dart';
 import '../../constants/constants.dart';
@@ -24,8 +25,27 @@ class _DoubleDataScreenState extends State<DoubleDataScreen> {
   FocusNode textField4FocusNode = FocusNode();
   String? selectedTime;
 
+  int selectedIndex = -1;
+
+  void updateTime(String newTime) {
+    setState(() {
+      selectedTime = newTime;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    void _showTimeSelectionBottomSheet(BuildContext context) {
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return TimeSelectionBar(
+            onTimeSelected: updateTime,
+          );
+        },
+      );
+    }
+
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -147,52 +167,53 @@ class _DoubleDataScreenState extends State<DoubleDataScreen> {
           ),
           InkWell(
             onTap: () {
-              showBottomSheet(
-                  enableDrag: true,
-                  context: context,
-                  builder: (context) {
-                    return Container(
-                      height: 300,
-                      color: Colors.grey.shade200,
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Close')),
-                            ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: timeList.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          selectedTime = timeList[index];
-                                          _Time.text = selectedTime!;
-                                        });
-                                        print("Selected Time : " + _Time.text);
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text(
-                                        timeList[index],
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  );
-                                }),
-                          ],
-                        ),
-                      ),
-                    );
-                  });
+              _showTimeSelectionBottomSheet(context);
+              // showBottomSheet(
+              //     enableDrag: true,
+              //     context: context,
+              //     builder: (context) {
+              //       return Container(
+              //         height: 300,
+              //         color: Colors.grey.shade200,
+              //         child: SingleChildScrollView(
+              //           child: Column(
+              //             children: [
+              //               TextButton(
+              //                   onPressed: () {
+              //                     Navigator.pop(context);
+              //                   },
+              //                   child: const Text('Close')),
+              //               ListView.builder(
+              //                   shrinkWrap: true,
+              //                   physics: const NeverScrollableScrollPhysics(),
+              //                   itemCount: timeList.length,
+              //                   itemBuilder: (context, index) {
+              //                     return Padding(
+              //                       padding: const EdgeInsets.all(8.0),
+              //                       child: InkWell(
+              //                         onTap: () {
+              //                           setState(() {
+              //                             selectedTime = timeList[index];
+              //                             _Time.text = selectedTime!;
+              //                           });
+              //                           print("Selected Time : " + _Time.text);
+              //                           Navigator.pop(context);
+              //                         },
+              //                         child: Text(
+              //                           timeList[index],
+              //                           textAlign: TextAlign.center,
+              //                           style: const TextStyle(
+              //                               fontSize: 24,
+              //                               fontWeight: FontWeight.bold),
+              //                         ),
+              //                       ),
+              //                     );
+              //                   }),
+              //             ],
+              //           ),
+              //         ),
+              //       );
+              //     });
             },
             child: Container(
               height: 80,
